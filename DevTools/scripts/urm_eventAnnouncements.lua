@@ -1,0 +1,62 @@
+local eventTypes =
+{
+	"OnPlayerConnect",
+	"OnPlayerDisconnect",
+	"OnGUIAction",
+	"OnPlayerSendMessage",
+	"OnPlayerDeath",
+	"OnDeathTimeExpiration",
+	"OnPlayerAttribute",
+	"OnPlayerSkill",
+	"OnPlayerLevel",
+	"OnPlayerShapeshift",
+	"OnPlayerCellChange",
+	"OnPlayerEndCharGen",
+	"OnPlayerEquipment",
+	"OnPlayerInventory",
+	"OnPlayerSpellbook",
+	"OnPlayerQuickKeys",
+	"OnPlayerJournal",
+	"OnPlayerFaction",
+	"OnPlayerTopic",
+	"OnPlayerBounty",
+	"OnPlayerReputation",
+	"OnPlayerBook",
+	"OnPlayerItemUse",
+	"OnPlayerMiscellaneous",
+	"OnCellLoad",
+	"OnCellUnload",
+	"OnCellDeletion",
+	"OnActorList",
+	"OnActorEquipment",
+	"OnActorAI",
+	"OnActorDeath",
+	"OnActorCellChange",
+	"OnObjectActivate",
+	"OnObjectPlace",
+	"OnObjectSpawn",
+	"OnObjectDelete",
+	"OnObjectLock",
+	"OnObjectTrap",
+	"OnObjectScale",
+	"OnObjectState",
+	"OnDoorState",
+	"OnContainer",
+	"OnVideoPlay",
+	"OnRecordDynamic",
+	"OnWorldKillCount",
+	"OnWorldMap",
+	"OnWorldWeather",
+	"OnMpNumIncrement",
+	"OnObjectLoopTimeExpiration"
+}
+
+for _,event in pairs(eventTypes) do
+	eventManager.registerValidator(
+		event,
+		function()
+			tes3mp.SendMessage(0,event.."\n")
+			return true
+		end
+	)
+end
