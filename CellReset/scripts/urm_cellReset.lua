@@ -1,5 +1,3 @@
-local scandir = require("util/scandir")
-
 local cellReset = {}
 
 cellReset.config = jsonInterface.load("config/urm_cellReset.json")
@@ -49,8 +47,8 @@ function cellReset.needsReset(cellDescription)
 end
 
 function cellReset.resetCell(cellDescription)
-	LoadedCells[cellDescription] = Cell(cellDescription)
-	jsonInterface.save("cell/" .. LoadedCells[cellDescription].entryFile, LoadedCells[cellDescription].data)
+	local cell = Cell(cellDescription)
+	os.remove("mp-stuff/data/cell/" .. cell.entryFile)
 end
 
 function cellReset.manageCells()

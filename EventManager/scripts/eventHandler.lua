@@ -623,13 +623,13 @@ eventHandler.OnCellLoad = function(pid, cellDescription)
 end
 
 eventHandler.OnCellUnload = function(pid, cellDescription)
-    if Players[pid] ~= nil and Players[pid]:IsLoggedIn() then
-		local isValid = eventManager.triggerValidators("OnCellUnload",{pid,cellDescription})
-		if isValid then
+	local isValid = eventManager.triggerValidators("OnCellUnload",{pid,cellDescription})
+	if isValid then
+		if Players[pid] ~= nil and Players[pid]:IsLoggedIn() then
 			logicHandler.UnloadCellForPlayer(pid, cellDescription)
 		end
-		eventManager.triggerHandlers("OnCellUnload",isValid,{pid,cellDescription})
-    end
+	end
+	eventManager.triggerHandlers("OnCellUnload",isValid,{pid,cellDescription})
 end
 
 eventHandler.OnCellDeletion = function(cellDescription)
