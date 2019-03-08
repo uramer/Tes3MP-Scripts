@@ -1,6 +1,6 @@
 {
 	"excludedCells": [],
-	"resetTime": 60,
+	"resetTime": 120,
 	"useGameTime": true,
-	"dataPath": "scripts/urm_cellData.json"
+	"dataPath": "scripts/urm_cellResetData.json"
 }
