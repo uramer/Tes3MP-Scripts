@@ -6,6 +6,7 @@ To install it:
 * add the following line to your `mp-stuff/scripts/customScripts.lua`: `require("urm_doubleTrouble")`.
 
 This script only handles cells whose files have not existed in `mp-stuff/data/cells` at server startup, to avoid processing the same cell twice. That means, that only cell reset scripts that actually remove those files will cause creatures to be re-duplicated. One such script is my own [**cellReset**](https://github.com/uramer/Tes3MP-Scripts/tree/master/CellReset).
+If you choose so, `require` doubleTrouble after cellReset in `customScripts.lua` for them to interact properly.
 
 You can find the configuration file in `mp-stuff/data/config/urm_doubleTrouble.json`.
 * `"copies"` how many copies of the same creature you want to have. The default value is 5.

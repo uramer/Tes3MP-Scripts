@@ -30,10 +30,12 @@ for k, v in pairs(doubleTrouble.config.creatures) do
     doubleTrouble.creatureCheck[v] = true
 end
 
-local cellFiles = scandir("mp-stuff/data/cell")
+function doubleTrouble.OnServerPostInit()
+    local cellFiles = scandir("mp-stuff/data/cell")
 
-for k, v in pairs(cellFiles) do
-    doubleTrouble.visited[v] = true
+    for k, v in pairs(cellFiles) do
+        doubleTrouble.visited[v] = true
+    end
 end
 
 function doubleTrouble.isCreature(refId)
@@ -70,5 +72,6 @@ function doubleTrouble.OnActorList(eventStatus, pid, cellDescription)
 end
 
 customEventHooks.registerHandler("OnActorList", doubleTrouble.OnActorList)
+customEventHooks.registerHandler("OnServerPostInit", doubleTrouble.OnServerPostInit)
 
 return doubleTrouble
