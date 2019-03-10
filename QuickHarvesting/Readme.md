@@ -14,11 +14,11 @@ You can find the configuration file in `mp-stuff/data/config/urm_quickHarvesting
 * `"respawnTime"` how much time (in game hours) should pass until a plant grows again. By default is set to 720 = 24*30, same as vanilla Morrowind
 * `"plants"` data on what ingredients you can gather from various plants. You can find the syntax below:
     
-    "<container refId>": {
-        "ingredient": "<ingredient refId>",
-        "amount": {
-            "0": <highest roll taht gives 0 ingredients>",
-            "1": <highest roll taht gives 0 ingredients>",
-            ...
-        }
+```"<container refId>": {
+    "ingredient": "<ingredient refId>",
+    "amount": {
+        "0": <highest roll taht gives 0 ingredients>",
+        "1": <highest roll taht gives 0 ingredients>",
+        ...
     }
+}```
