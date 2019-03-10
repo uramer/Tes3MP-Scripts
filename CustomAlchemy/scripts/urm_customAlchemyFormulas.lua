@@ -12,6 +12,7 @@ local customAlchemyFormulas = {
     maxPotency = 100
 }
 
+
 function customAlchemyFormulas.getRandom()
     math.randomseed(os.time())
     
@@ -35,20 +36,87 @@ function customAlchemyFormulas.getLuck(pid)
 end
 
 
-function customAlchemyFormulas.getPotionPotency(pid, player_apparatuses)
-    local alchemy = customAlchemyFormulas.getAlchemy(pid)
-    local intelligence = customAlchemyFormulas.getIntelligence(pid)
-    local luck = customAlchemyFormulas.getLuck(pid)
+function customAlchemyFormulas.makeAlchemyStatus(pid, apparatuses, ingredients)
+    local status = {
+        pid = pid,
+        ingredients = ingredients
+    }
     
-    local x = alchemy + 0.1 * ( intelligence + luck )
-    x = x * player_apparatuses[customAlchemyFormulas.MORTAR] * customAlchemyFormulas.fPotionStrengthMult
+    status.mortar = apparatuses[customAlchemyFormulas.MORTAR]
+    status.alembic = apparatuses[customAlchemyFormulas.ALEMBIC]
+    status.calcinator = apparatuses[customAlchemyFormulas.CALCINATOR]
+    status.retort = apparatuses[customAlchemyFormulas.RETORT]
+
+    status.alchemy = customAlchemyFormulas.getAlchemy(pid)
+    status.intelligence = customAlchemyFormulas.getIntelligence(pid)
+    status.luck = customAlchemyFormulas.getLuck(pid)
+
+    status.potency = customAlchemyFormulas.getPotionPotency(status)
+
+    status.weight = customAlchemyFormulas.getPotionWeight(status)
     
-    return x
+    status.icon = customAlchemyFormulas.getPotionIcon(status)
+    
+    status.model = customAlchemyFormulas.getPotionModel(status)
+    
+    status.value = customAlchemyFormulas.getPotionValue(status)
+    
+    return status
 end
 
-function customAlchemyFormulas.getPotionCount(potency, n)
+function customAlchemyFormulas.getPotionPotency(status)
+    local potency = status.alchemy + 0.1 * ( status.intelligence + status.luck )
+    potency = potency * status.mortar * customAlchemyFormulas.fPotionStrengthMult
+    
+    return potency
+end
+
+function customAlchemyFormulas.getPotionValue(status)
+    return customAlchemyFormulas.iAlchemyMod * status.potency
+end
+
+
+function customAlchemyFormulas.getPotionWeight(status)
+    local total_weight = 0
+    for _,ingredient in pairs(status.ingredients) do
+        total_weight = total_weight + ingredient.weight
+    end
+    return (0.75 * total_weight + 0.35) / (0.5 + status.alembic)
+end
+
+function customAlchemyFormulas.getPotionIcon(status)
+    local tier = math.floor(status.potency/18)
+    if tier >= 4 then
+        return "m\\tx_potion_exclusive_01.tga"
+    elseif tier == 3 then
+        return "m\\tx_potion_quality_01.tga"
+    elseif tier == 2 then
+        return "m\\tx_potion_standard_01.tga"
+    elseif tier == 1 then
+        return "m\\tx_potion_cheap_01.tga"
+    end
+    return "m\\tx_potion_bargain_01.tga"
+end
+
+function customAlchemyFormulas.getPotionModel(status)
+    local tier = math.floor(status.potency/18)
+    if tier >= 4 then
+        return "m\\misc_potion_exclusive_01.nif"
+    elseif tier == 3 then
+        return "m\\misc_potion_quality_01.nif"
+    elseif tier == 2 then
+        return "m\\misc_potion_standard_01.nif"
+    elseif tier == 1 then
+        return "m\\misc_potion_cheap_01.nif"
+    end
+    return "m\\misc_potion_bargain_01.nif"
+end
+
+
+function customAlchemyFormulas.getPotionCount(status, ingredientCount)
+    local n = ingredientCount
     local roll = customAlchemyFormulas.getRandom()
-    local p = potency / customAlchemyFormulas.maxPotency
+    local p = status.potency / customAlchemyFormulas.maxPotency
     
     local pn = (1-p)^n
     local probability = pn
@@ -68,38 +136,33 @@ function customAlchemyFormulas.getPotionCount(potency, n)
     return n
 end
 
-function customAlchemyFormulas.getPotionMagnitude(pid, player_apparatuses, potency, effect)
+function customAlchemyFormulas.getEffectMagnitude(status, effect)
     if not effect.hasMagnitude then
         return 0
     end
     
-    local magnitude = potency / customAlchemyFormulas.fPotionT1MagMult / effect.cost
-    
-    local mortar = player_apparatuses[customAlchemyFormulas.MORTAR]
-    local alembic = player_apparatuses[customAlchemyFormulas.ALEMBIC]
-    local calcinator = player_apparatuses[customAlchemyFormulas.CALCINATOR]
-    local retort = player_apparatuses[customAlchemyFormulas.RETORT]
+    local magnitude = status.potency / customAlchemyFormulas.fPotionT1MagMult / effect.cost
     
     if effect.negative then
-        if alembic ~= 0 then
-            if calcinator ~= 0 then
-                magnitude = magnitude / ( alembic * 2 + calcinator * 3 )
+        if status.alembic ~= 0 then
+            if status.calcinator ~= 0 then
+                magnitude = magnitude / ( status.alembic * 2 + status.calcinator * 3 )
             else
-                magnitude = magnitude / ( alembic + 1 )
+                magnitude = magnitude / ( status.alembic + 1 )
             end
         else
-            magnitude = magnitude + calcinator
+            magnitude = magnitude + status.calcinator
             if not effect.hasDuration then
-                magnitude = magnitude*(calcinator + 0.5) - calcinator
+                magnitude = magnitude*( status.calcinator + 0.5 ) - status.calcinator
             end
         end
     else
-        local mod = calcinator + retort
+        local mod = status.calcinator + status.retort
         
-        if calcinator ~= 0 and  retort ~= 0 then
-            magnitude = magnitude  + mod + retort
+        if status.calcinator ~= 0 and  status.retort ~= 0 then
+            magnitude = magnitude  + mod + status.retort
             if not effect.hasDuration then
-                magnitude = magnitude - ( mod / 3 ) - retort + 0.5
+                magnitude = magnitude - ( mod / 3 ) - status.retort + 0.5
             end
         else
             magnitude = magnitude + mod
@@ -112,38 +175,33 @@ function customAlchemyFormulas.getPotionMagnitude(pid, player_apparatuses, poten
     return magnitude
 end
 
-function customAlchemyFormulas.getPotionDuration(pid, player_apparatuses, potency, effect)
+function customAlchemyFormulas.getEffectDuration(status, effect)
     if not effect.hasDuration then
         return 0
     end
     
-    local duration = potency / customAlchemyFormulas.fPotionT1DurMult / effect.cost
-    
-    local mortar = player_apparatuses[customAlchemyFormulas.MORTAR]
-    local alembic = player_apparatuses[customAlchemyFormulas.ALEMBIC]
-    local calcinator = player_apparatuses[customAlchemyFormulas.CALCINATOR]
-    local retort = player_apparatuses[customAlchemyFormulas.RETORT]
+    local duration = status.potency / customAlchemyFormulas.fPotionT1DurMult / effect.cost
     
     if effect.negative then
-        if alembic ~= 0 then
-            if calcinator ~= 0 then
-                duration = duration / ( alembic * 2 + calcinator * 3 )
+        if status.alembic ~= 0 then
+            if status.calcinator ~= 0 then
+                duration = duration / ( status.alembic * 2 + status.calcinator * 3 )
             else
-                duration = duration / ( alembic + 1 )
+                duration = duration / ( status.alembic + 1 )
             end
         else
-            duration = duration + calcinator
+            duration = duration + status.calcinator
             if not effect.hasMagnitude then
-                duration = duration*(calcinator + 0.5) - calcinator
+                duration = duration*(status.calcinator + 0.5) - status.calcinator
             end
         end
     else
-        local mod = calcinator + retort
+        local mod = status.calcinator + status.retort
         
-        if calcinator ~= 0 and  retort ~= 0 then
-            duration = duration + mod + retort
+        if status.calcinator ~= 0 and  status.retort ~= 0 then
+            duration = duration + mod + status.retort
             if not effect.hasMagnitude then
-                duration = duration - ( mod / 3 ) - retort + 0.5
+                duration = duration - ( mod / 3 ) - status.retort + 0.5
             end
         else
             duration = duration + mod
@@ -154,38 +212,6 @@ function customAlchemyFormulas.getPotionDuration(pid, player_apparatuses, potenc
     end
     
     return duration
-end
-
-function customAlchemyFormulas.getPotionWeight(pid, player_apparatuses, total_weight)
-    return (0.75 * total_weight + 0.35) / (0.5 + player_apparatuses[customAlchemyFormulas.MORTAR])
-end
-
-function customAlchemyFormulas.getPotionIcon(potency)
-    local tier = math.floor(potency/18)
-    if tier >= 4 then
-        return "m\\tx_potion_exclusive_01.tga"
-    elseif tier == 3 then
-        return "m\\tx_potion_quality_01.tga"
-    elseif tier == 2 then
-        return "m\\tx_potion_standard_01.tga"
-    elseif tier == 1 then
-        return "m\\tx_potion_cheap_01.tga"
-    end
-    return "m\\tx_potion_bargain_01.tga"
-end
-
-function customAlchemyFormulas.getPotionModel(potency)
-    local tier = math.floor(potency/18)
-    if tier >= 4 then
-        return "m\\misc_potion_exclusive_01.nif"
-    elseif tier == 3 then
-        return "m\\misc_potion_quality_01.nif"
-    elseif tier == 2 then
-        return "m\\misc_potion_standard_01.nif"
-    elseif tier == 1 then
-        return "m\\misc_potion_cheap_01.nif"
-    end
-    return "m\\misc_potion_bargain_01.nif"
 end
 
 

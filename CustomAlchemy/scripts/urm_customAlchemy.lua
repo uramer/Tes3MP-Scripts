@@ -71,6 +71,7 @@ function customAlchemy.updateContainer(pid)
     cell:LoadContainers(pid, cell.data.objectData, {uniqueIndex})
     logicHandler.RunConsoleCommandOnPlayer(pid, "togglemenus", false)
     logicHandler.RunConsoleCommandOnPlayer(pid, "togglemenus", false)
+    customAlchemy.showContainer(pid)
 end
 
 function customAlchemy.getContainerWeight(pid)
@@ -348,7 +349,7 @@ end
 
 
 function customAlchemy.failure(pid,label)
-    tes3mp.MessageBox(pid,customAlchemy.config.menu.failure_id,label)
+    tes3mp.MessageBox(pid, customAlchemy.config.menu.failure_id,label)
     tes3mp.PlaySpeech(pid, "fx/item/potionFAIL.wav")
 end
 
@@ -370,6 +371,7 @@ function customAlchemy.brewPotions(pid, name)
     if #containerInventory <= customAlchemy.config.maximumIngredientCount then
         local potion_effects = {} --keeping track of all effects of our ingredients
         local min_ingredient_count = nil --how many potions we can brew
+        local potion_ingredients = {} --list of all ingredients we will use
         
         for _, item in pairs(containerInventory) do
             if min_ingredient_count == nil then
@@ -379,6 +381,8 @@ function customAlchemy.brewPotions(pid, name)
             end
             
             local ingredient = customAlchemy.config.ingredients[item.refId]
+            
+            table.insert(potion_ingredients,ingredient)
             
             if ingredient~=nil then
                 
@@ -412,15 +416,16 @@ function customAlchemy.brewPotions(pid, name)
         
         local player_apparatuses = customAlchemy.determineApparatuses(pid)
         
-        local potency = customAlchemyFormulas.getPotionPotency(pid, player_apparatuses)
+        local status = customAlchemyFormulas.makeAlchemyStatus(pid, player_apparatuses, potion_ingredients)
         
-        local potion_count = customAlchemyFormulas.getPotionCount(potency,min_ingredient_count)
+        local potion_count = customAlchemyFormulas.getPotionCount(status,min_ingredient_count)
         
         local recordTable = {
             name = name,
-            weight = customAlchemyFormulas.getPotionWeight(pid, player_apparatuses, customAlchemy.getContainerWeight(pid)),
-            icon = customAlchemyFormulas.getPotionIcon(potency),
-            model = customAlchemyFormulas.getPotionModel(potency)
+            weight = status.weight,
+            icon = status.icon,
+            model = status.model,
+            value = status.value
         }
         
         recordTable.effects = {}
@@ -450,8 +455,8 @@ function customAlchemy.brewPotions(pid, name)
                     
                 end
                 
-                local magnitude = customAlchemyFormulas.getPotionMagnitude(pid, player_apparatuses, potency, effectData)
-                local duration = customAlchemyFormulas.getPotionDuration(pid, player_apparatuses, potency, effectData)
+                local magnitude = customAlchemyFormulas.getEffectMagnitude(status, effectData)
+                local duration = customAlchemyFormulas.getEffectDuration(status, effectData)
                 
                 local effect = {
                     id = effectId,
