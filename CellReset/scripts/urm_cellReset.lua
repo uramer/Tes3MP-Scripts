@@ -49,7 +49,7 @@ end
 
 function cellReset.resetCell(cellDescription)
     local cell = Cell(cellDescription)
-    os.remove("mp-stuff/data/cell/" .. cell.entryFile)
+    os.remove(tes3mp.GetModDir().."/cell/" .. cell.entryFile)
 end
 
 function cellReset.manageCells()
