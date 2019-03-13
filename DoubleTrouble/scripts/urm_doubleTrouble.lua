@@ -31,7 +31,7 @@ for k, v in pairs(doubleTrouble.config.creatures) do
 end
 
 function doubleTrouble.OnServerPostInit()
-    local cellFiles = scandir("mp-stuff/data/cell")
+    local cellFiles = scandir(tes3mp.GetModDir().."/cell")
 
     for k, v in pairs(cellFiles) do
         doubleTrouble.visited[v] = true
