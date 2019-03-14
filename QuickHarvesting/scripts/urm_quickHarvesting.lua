@@ -130,6 +130,7 @@ function quickHarvesting.updateCell(pid, cellDescription)
     
     for uniqueIndex,object in pairs(cell.data.objectData) do
         if quickHarvesting.plantData[uniqueIndex] ~= nil then
+            quickHarvesting.disablePlant(pid, cellDescription, uniqueIndex)
             local plantData = quickHarvesting.plantData[uniqueIndex]
             if not plantData.state then
                 if quickHarvesting.getGameTime() - plantData.harvestTime > quickHarvesting.config.respawnTime then
